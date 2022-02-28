@@ -108,7 +108,10 @@ print(u2_mle)
 plotN_MLE(X_train2['f1'].tolist(),'Class 2 Dimension 1')
 plotN_MLE(X_train2['f2'].tolist(),'Class 2 Dimension 2')
 
-"""# (d)"""
+"""Yes, the final answer matches the theoretically calculated values.
+
+# (d)
+"""
 
 fig = plt.figure(figsize=(12,10))
 ax = plt.axes(projection ='3d')
@@ -138,8 +141,8 @@ plt.show()
 """# (e)"""
 
 def discriminant(mu11, mu12, mu21, mu22, x1, x2):
-  d1 = np.log(pow(u11_mle, x1)*pow(1-u11_mle, 1-x1)*pow(u12_mle, x2)*pow(1-u12_mle, 1-x2))
-  d2 = np.log(pow(u21_mle, x1)*pow(1-u21_mle, 1-x1)*pow(u22_mle, x2)*pow(1-u22_mle, 1-x2))
+  d1 = np.log(pow(mu11, x1)*pow(1-mu11, 1-x1)*pow(mu12, x2)*pow(1-mu12, 1-x2))
+  d2 = np.log(pow(mu21, x1)*pow(1-mu21, 1-x1)*pow(mu22, x2)*pow(1-mu22, 1-x2))
   if d1>=d2:
     return 1
   else:
@@ -149,14 +152,14 @@ X_test1_f1 = X_test1['f1'].tolist()
 X_test1_f2 = X_test1['f2'].tolist()
 pred1 = []
 for i in range(50):
-  d = discriminant(u11, u12, u21, u22, X_test1_f1[i], X_test1_f2[i])
+  d = discriminant(u11_mle, u12_mle, u21_mle, u22_mle, X_test1_f1[i], X_test1_f2[i])
   pred1.append(d)
 
 X_test2_f1 = X_test2['f1'].tolist()
 X_test2_f2 = X_test2['f2'].tolist()
 pred2 = []
 for i in range(50):
-  d = discriminant(u11, u12, u21, u22, X_test2_f1[i], X_test2_f2[i])
+  d = discriminant(u11_mle, u12_mle, u21_mle, u22_mle, X_test2_f1[i], X_test2_f2[i])
   pred2.append(d)
 
 num1 = 0
@@ -168,10 +171,10 @@ for i in range(50):
   if pred2[i]==2:
     num2 += 1
 
-print('Accuracy for class 1')
-print(num1/50)
-print('Accuracy for class 2')
-print(num2/50)
+print('Number of samples correctly classified in class 1')
+print(num1)
+print('Number of samples correctly classified in class 2')
+print(num2)
 
 """# Question 3
 
