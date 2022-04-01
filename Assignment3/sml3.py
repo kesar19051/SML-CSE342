@@ -21,6 +21,8 @@ from sklearn.metrics import accuracy_score
 import gzip
 import matplotlib.pyplot as plt 
 from sklearn.decomposition import PCA
+import pandas as pd
+import math
 
 """#Question1
 
@@ -186,3 +188,65 @@ plt.plot(x_list, y_list)
 plt.xlabel('num_components')
 plt.ylabel('accuracy')
 plt.show()
+
+"""#Question3"""
+
+df_train = pd.read_csv("/content/drive/MyDrive/SML/fminst/fashion-mnist_train.csv")
+df_test = pd.read_csv("/content/drive/MyDrive/SML/fminst/fashion-mnist_test.csv")
+
+data = []
+counter = []
+for i in range(10):
+  data.append(np.zeros((6000,784)))
+  counter.append(0)
+
+for index,row in df_train.iterrows():
+  label = row['label']
+  data[label][counter[label]] = np.array(row['pixel1':]).reshape(1,784)
+  counter[label] += 1
+
+for i in range(len(data)):
+  data[i] = np.transpose(data[i])
+
+X_data = data[0]
+for i in range(1, len(data)):
+  X_data = np.append(X_data,data[i],axis = 1)
+
+X_data.shape
+
+def scatter(X):
+  mu = np.mean(X, axis = 0)
+  X_mu = np.subtract(X,mu)
+  return np.dot(X_mu,X_mu.T)
+
+def FDA(data):
+  S_w = 0
+  for i in range(len(data)):
+    S_w += scatter(data[i])
+  S_b = scatter(X_data)-S_w
+  mat = np.dot(np.linalg.pinv(S_w),S_b)
+  eigenvalues, eigenvectors = np.linalg.eig(mat)
+  eiglist = [(eigenvalues[i],eigenvectors[:,i]) for i in range(len(eigenvalues))]
+  eiglist = sorted(eiglist, key = lambda x: x[0], reverse = True)
+  w = np.array([eiglist[i][1] for i in range(784)])
+  return w
+
+w = FDA(data)
+
+Y = np.dot(np.transpose(w),data[0])
+for i in range(1,len(data)):
+  Y = np.append(Y,np.dot(np.transpose(w),data[i]),axis = 1)
+Y = Y.T
+Y.shape
+
+y_train = []
+for i in range(60000):
+  y_train.append(math.floor(i/6000))
+
+X_test = np.array(df_test.loc[ : , df_test.columns != 'label'])
+y_test = pd.DataFrame(df_test['label'])
+
+X_test.shape
+
+y_pred = lda(Y,y_train,X_test)
+accuracy_score(y_pred,y_test['label'].tolist())
