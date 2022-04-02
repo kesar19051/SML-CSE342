@@ -215,9 +215,12 @@ for i in range(1, len(data)):
 X_data.shape
 
 def scatter(X):
-  mu = np.mean(X, axis = 0)
-  X_mu = np.subtract(X,mu)
-  return np.dot(X_mu,X_mu.T)
+  mu = np.mean(X, axis = 1)
+  Xc = np.empty((len(X),len(X[0])))
+  for i in range(len(X)):
+    for j in range(len(X[0])):
+      Xc[i][j] = X[i][j]-mu[i]
+  return np.dot(Xc,Xc.T)
 
 def FDA(data):
   S_w = 0
@@ -228,15 +231,20 @@ def FDA(data):
   eigenvalues, eigenvectors = np.linalg.eig(mat)
   eiglist = [(eigenvalues[i],eigenvectors[:,i]) for i in range(len(eigenvalues))]
   eiglist = sorted(eiglist, key = lambda x: x[0], reverse = True)
-  w = np.array([eiglist[i][1] for i in range(784)])
+  w = np.array([eiglist[i][1] for i in range(9)])
   return w
 
 w = FDA(data)
 
-Y = np.dot(np.transpose(w),data[0])
-for i in range(1,len(data)):
-  Y = np.append(Y,np.dot(np.transpose(w),data[i]),axis = 1)
-Y = Y.T
+w.shape
+
+X_data = X_data.T
+Y = np.zeros((60000,9))
+for i in range(60000):
+  data_point = X_data[i]
+  y = np.dot(w,data_point)
+  Y[i] = y
+
 Y.shape
 
 y_train = []
@@ -246,7 +254,11 @@ for i in range(60000):
 X_test = np.array(df_test.loc[ : , df_test.columns != 'label'])
 y_test = pd.DataFrame(df_test['label'])
 
-X_test.shape
+Y_test = np.zeros((10000,9))
+for i in range(10000):
+  data_point = X_test[i]
+  y = np.dot(w,data_point)
+  Y_test[i] = y
 
-y_pred = lda(Y,y_train,X_test)
+y_pred = lda(Y,y_train,Y_test)
 accuracy_score(y_pred,y_test['label'].tolist())
