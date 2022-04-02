@@ -262,3 +262,17 @@ for i in range(10000):
 
 y_pred = lda(Y,y_train,Y_test)
 accuracy_score(y_pred,y_test['label'].tolist())
+
+"""#Question4"""
+
+X_train = images_file_read("/content/drive/MyDrive/SML/mnist/train-images-idx3-ubyte.gz")
+print(X_train.shape)
+y_train = labels_file_read("/content/drive/MyDrive/SML/mnist/train-labels-idx1-ubyte.gz")
+X_test = images_file_read("/content/drive/MyDrive/SML/mnist/t10k-images-idx3-ubyte.gz")
+print(X_test.shape)
+y_test = labels_file_read("/content/drive/MyDrive/SML/mnist/t10k-labels-idx1-ubyte.gz")
+
+X_train = X_train.reshape(60000,28*28)
+X_test = X_test.reshape(10000,28*28)
+
+X_train, X_test = pca(15, X_train, X_test)
