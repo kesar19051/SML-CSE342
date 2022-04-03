@@ -112,20 +112,23 @@ accuracy_score(y_test, y_pred)
 
 """Class-wise accuracy"""
 
-pred = []
-test = []
-for i in range(10):
-  pred.append([])
-  test.append([])
+def classWiseAccuracy(y_t,y_p):
+  pred = []
+  test = []
+  for i in range(10):
+    pred.append([])
+    test.append([])
 
-for i in range(len(y_pred)):
-  cls = y_test[i]
-  pred[cls].append(y_test[i])
-  test[cls].append(y_pred[i])
+  for i in range(len(y_p)):
+    cls = y_t[i]
+    pred[cls].append(y_t[i])
+    test[cls].append(y_p[i])
 
-for i in range(10):
-  print('Class'+str(i), end = ' ')
-  print(accuracy_score(test[i],pred[i]))
+  for i in range(10):
+    print('Class'+str(i), end = ' ')
+    print(accuracy_score(test[i],pred[i]))
+
+classWiseAccuracy(y_test,y_pred)
 
 """#Question2"""
 
@@ -261,6 +264,8 @@ for i in range(10000):
 y_pred = lda(Y,y_train,Y_test)
 accuracy_score(y_pred,y_test['label'].tolist())
 
+classWiseAccuracy(list(y_test['label']),list(y_pred))
+
 """#Question4"""
 
 X_train = images_file_read("/content/drive/MyDrive/SML/mnist/train-images-idx3-ubyte.gz")
@@ -332,3 +337,5 @@ for i in range(10000):
 
 y_pred = lda(Y,y_train,Y_test)
 accuracy_score(y_pred,y_test)
+
+classWiseAccuracy(y_test.tolist(),y_pred.tolist())
