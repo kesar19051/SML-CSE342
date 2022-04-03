@@ -26,7 +26,7 @@ import math
 
 """#Question1
 
-#(a)
+#Visualisation
 """
 
 # open file
@@ -65,10 +65,7 @@ def visualise(num):
 for i in range(5):
   visualise(i+1)
 
-"""#(b)
-
-Creating dataset
-"""
+"""Creating dataset"""
 
 batch_1 = unpickle('/content/Files/cifar-10-batches-py/data_batch_1', 'bytes')
 batch_2 = unpickle('/content/Files/cifar-10-batches-py/data_batch_2', 'bytes')
@@ -100,6 +97,8 @@ y_test = test_data[b"labels"]
 y_test = np.array(y_test)
 print(X_test.shape,y_test.shape)
 
+"""#LDA"""
+
 def lda(xtrain, ytrain, xtest):
   clf = LinearDiscriminantAnalysis()
   clf.fit(xtrain, ytrain)
@@ -107,10 +106,7 @@ def lda(xtrain, ytrain, xtest):
 
 y_pred = lda(X_train, y_train, X_test)
 
-"""#(c)
-
-Accuracy
-"""
+"""#Accuracy"""
 
 accuracy_score(y_test, y_pred)
 
@@ -171,6 +167,8 @@ y_test = labels_file_read("/content/drive/MyDrive/SML/mnist/t10k-labels-idx1-uby
 X_train = X_train.reshape(60000,28*28)
 X_test = X_test.reshape(10000,28*28)
 
+"""#PCA"""
+
 def pca(num, xtrain, xtest):
   pca = PCA(n_components = num)
   pca.fit(xtrain)
@@ -222,7 +220,7 @@ def scatter(X):
       Xc[i][j] = X[i][j]-mu[i]
   return np.dot(Xc,Xc.T)
 
-def FDA(data):
+def FDA(X_data,data):
   S_w = 0
   for i in range(len(data)):
     S_w += scatter(data[i])
@@ -234,7 +232,7 @@ def FDA(data):
   w = np.array([eiglist[i][1] for i in range(9)])
   return w
 
-w = FDA(data)
+w = FDA(X_data,data)
 
 w.shape
 
@@ -276,3 +274,61 @@ X_train = X_train.reshape(60000,28*28)
 X_test = X_test.reshape(10000,28*28)
 
 X_train, X_test = pca(15, X_train, X_test)
+
+print(X_train.shape)
+print(X_test.shape)
+
+X_train = pd.DataFrame(X_train)
+X_train[15] = list(y_train)
+
+data = []
+for i in range(10):
+  data.append([])
+
+for index,row in X_train.iterrows():
+  label = row[15]
+  data[int(label)].append(row[0:15])
+
+for i in range(len(data)):
+  data[i] = np.transpose(np.array(data[i]))
+
+X_data = data[0]
+for i in range(1, len(data)):
+  X_data = np.append(X_data,data[i],axis = 1)
+
+X_data.shape
+
+w = FDA(X_data,data)
+
+w.shape
+
+X_data = X_data.T
+Y = np.zeros((60000,9))
+for i in range(60000):
+  data_point = X_data[i]
+  y = np.dot(w,data_point)
+  Y[i] = y
+
+Y.shape
+
+length = []
+for d in data:
+  ro,col = d.shape
+  length.append(col)
+
+y_train = []
+for i in range(length[0]):
+  y_train.append(0)
+
+for i in range(1,len(length)):
+  for j in range(length[i]):
+    y_train.append(i)
+
+Y_test = np.zeros((10000,9))
+for i in range(10000):
+  data_point = X_test[i]
+  y = np.dot(w,data_point)
+  Y_test[i] = y
+
+y_pred = lda(Y,y_train,Y_test)
+accuracy_score(y_pred,y_test)
