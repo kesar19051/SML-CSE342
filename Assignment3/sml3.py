@@ -195,6 +195,12 @@ plt.show()
 df_train = pd.read_csv("/content/drive/MyDrive/SML/fminst/fashion-mnist_train.csv")
 df_test = pd.read_csv("/content/drive/MyDrive/SML/fminst/fashion-mnist_test.csv")
 
+# xtrain = np.array(df_train.loc[ : , df_train.columns != 'label'])
+# ytrain = df_train['label']
+# xtest = np.array(df_test.loc[ : , df_test.columns != 'label'])
+# y_pred = lda(xtrain,ytrain,xtest)
+# accuracy_score(df_test['label'],y_pred)
+
 data = []
 counter = []
 for i in range(10):
@@ -229,7 +235,7 @@ def FDA(X_data,data):
     S_w += scatter(data[i])
   S_b = scatter(X_data)-S_w
   mat = np.dot(np.linalg.pinv(S_w),S_b)
-  eigenvalues, eigenvectors = np.linalg.eig(mat)
+  eigenvalues, eigenvectors = np.linalg.eigh(mat)
   eiglist = [(eigenvalues[i],eigenvectors[:,i]) for i in range(len(eigenvalues))]
   eiglist = sorted(eiglist, key = lambda x: x[0], reverse = True)
   w = np.array([eiglist[i][1] for i in range(9)])
@@ -339,3 +345,43 @@ y_pred = lda(Y,y_train,Y_test)
 accuracy_score(y_pred,y_test)
 
 classWiseAccuracy(y_test.tolist(),y_pred.tolist())
+
+"""#Question6"""
+
+def sigmoid(x):
+  return 1/(1 + np.exp(-x))
+
+XX = [-9,-8,-7,-6,-4,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9]
+YY = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,1]
+
+b1_1 = np.random.random(1)[0]
+b1_0 = np.random.random(1)[0]
+b2_1 = np.random.random(1)[0]
+b2_0 = np.random.random(1)[0]
+eta = 1/1000
+for i in range(1000):
+  for j in range(len(XX)): 
+    x = XX[j]
+    y = YY[j]
+    perceptron1 = b1_1*x + b1_0
+    activation1 = sigmoid(perceptron1)
+    perceptron2 = b2_1*activation1 + b2_0
+    activation2 = 0
+    a = sigmoid(perceptron1)
+    if perceptron2>=0:
+      activation2 = 1
+    else:
+      activation2 = -1
+    b1_1 = b1_1-eta*(-y*b2_1*a*(1-a)*x)
+    b1_0 = b1_0-eta*(-y*b2_1*a*(1-a))
+    b2_1 = b2_1-eta*(-y*a)
+    b2_0 = b2_0-eta*(-y)
+
+inx = -900
+p1 = b1_1*inx + b1_0
+ac1 = sigmoid(p1)
+p2 = b2_1*ac1 + b2_0
+if p2>=0:
+  print(1)
+else:
+  print(-1)
