@@ -14,6 +14,7 @@ import pandas as pd
 import numpy as np
 import gzip
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeRegressor
 import random
 import tensorflow as tf
 from keras.models import Sequential
@@ -31,6 +32,76 @@ def accuracy(pred, test):
     if pred[i]==test[i]:
       num += 1
   return num/(length*1.0)
+
+def images_file_read(file_name):
+    with gzip.open(file_name, 'r') as f:
+        # first 4 bytes is a magic number
+        magic_number = int.from_bytes(f.read(4), 'big')
+        # second 4 bytes is the number of images
+        image_count = int.from_bytes(f.read(4), 'big')
+        # third 4 bytes is the row count
+        row_count = int.from_bytes(f.read(4), 'big')
+        # fourth 4 bytes is the column count
+        column_count = int.from_bytes(f.read(4), 'big')
+        # rest is the image pixel data, each pixel is stored as an unsigned byte
+        # pixel values are 0 to 255
+        image_data = f.read()
+        images = np.frombuffer(image_data, dtype=np.uint8)\
+            .reshape((image_count, row_count, column_count))
+        return images
+def labels_file_read(file_name):
+    with gzip.open(file_name, 'r') as f:
+        # first 4 bytes is a magic number
+        magic_number = int.from_bytes(f.read(4), 'big')
+        # second 4 bytes is the number of labels
+        label_count = int.from_bytes(f.read(4), 'big')
+        # rest is the label data, each label is stored as unsigned byte
+        # label values are 0 to 9
+        label_data = f.read()
+        labels = np.frombuffer(label_data, dtype=np.uint8)
+        return labels
+
+"""#Question 1"""
+
+X_train = images_file_read("/content/drive/MyDrive/SML/mnist/train-images-idx3-ubyte.gz")
+print(X_train.shape)
+y_train = labels_file_read("/content/drive/MyDrive/SML/mnist/train-labels-idx1-ubyte.gz")
+X_test = images_file_read("/content/drive/MyDrive/SML/mnist/t10k-images-idx3-ubyte.gz")
+print(X_test.shape)
+y_test = labels_file_read("/content/drive/MyDrive/SML/mnist/t10k-labels-idx1-ubyte.gz")
+# y_test = list(y_test)
+
+X_train = X_train.reshape(60000,28*28)
+X_test = X_test.reshape(10000,28*28)
+
+iterations = 5
+learning_rate = 0.1
+trees = []
+
+base_model = DecisionTreeRegressor(max_depth = 1)
+base_model = base_model.fit(X_train, y_train)
+prediction = base_model.predict(X_train)
+trees.append(base_model)
+
+for i in range(iterations):
+  residue = y_train-(learning_rate*prediction)
+  # print(residue)
+  model = DecisionTreeRegressor()
+  model = model.fit(X_train, residue)
+  prediction = model.predict(X_train)
+  trees.append(model)
+
+# y_train
+
+final_prediction = learning_rate * np.sum([t.predict(X_train) for t in trees], axis=0)
+for i in range(len(final_prediction)):
+  final_prediction[i] = round(final_prediction[i])
+print(accuracy(list(final_prediction), list(y_train)))
+
+test = learning_rate * np.sum([t.predict(X_test) for t in trees], axis=0)
+for i in range(len(test)):
+  test[i] = round(test[i])
+print(accuracy(list(test), list(y_test)))
 
 """#Question 2"""
 
@@ -91,33 +162,9 @@ y_test = list(y_test)
 
 print(accuracy(y_pred, y_test))
 
-def images_file_read(file_name):
-    with gzip.open(file_name, 'r') as f:
-        # first 4 bytes is a magic number
-        magic_number = int.from_bytes(f.read(4), 'big')
-        # second 4 bytes is the number of images
-        image_count = int.from_bytes(f.read(4), 'big')
-        # third 4 bytes is the row count
-        row_count = int.from_bytes(f.read(4), 'big')
-        # fourth 4 bytes is the column count
-        column_count = int.from_bytes(f.read(4), 'big')
-        # rest is the image pixel data, each pixel is stored as an unsigned byte
-        # pixel values are 0 to 255
-        image_data = f.read()
-        images = np.frombuffer(image_data, dtype=np.uint8)\
-            .reshape((image_count, row_count, column_count))
-        return images
-def labels_file_read(file_name):
-    with gzip.open(file_name, 'r') as f:
-        # first 4 bytes is a magic number
-        magic_number = int.from_bytes(f.read(4), 'big')
-        # second 4 bytes is the number of labels
-        label_count = int.from_bytes(f.read(4), 'big')
-        # rest is the label data, each label is stored as unsigned byte
-        # label values are 0 to 9
-        label_data = f.read()
-        labels = np.frombuffer(label_data, dtype=np.uint8)
-        return labels
+"""#Question 3"""
+
+
 
 """#Question 4"""
 
